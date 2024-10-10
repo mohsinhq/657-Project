@@ -5,7 +5,7 @@
    - [Commit Message Types](#commit-message-types)
    - [Examples](#example-commit-messages)
 2. [Creating Pull Requests](#creating-pull-requests)
-3. [Branching Strategy](#branching-strategy)
+3. [Branching Strategy](#branching)
 4. [Naming Conventions](#naming-conventions)
 5. [Review and Feedback](#review-and-feedback)
 
@@ -96,7 +96,7 @@ We use a branching strategy to organise our work:
 
 ---
 
-**Naming Conventions:**
+## Naming Conventions:
 
 - **Variables:** Use `camelCase` for variable names (e.g., `playerHealth`, `enemyCount`).
 - **Functions:** Use descriptive function names (e.g., `calculateDamage`, `spawnEnemies`).
