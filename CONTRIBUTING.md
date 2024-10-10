@@ -6,9 +6,8 @@
    - [Examples](#example-commit-messages)
 2. [Creating Pull Requests](#creating-pull-requests)
 3. [Branching Strategy](#branching-strategy)
-4. [Review and Feedback](#review-and-feedback)
-5. [Naming Conventions](#naming-conventions)
-6. [Review and Feedback](#review-and-eedback)
+4. [Naming Conventions](#naming-conventions)
+5. [Review and Feedback](#review-and-feedback)
 
 ---
 
