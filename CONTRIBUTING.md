@@ -3,12 +3,12 @@
 ## Table of Contents
 1. [Commit Message Format](#commit-message-format)
    - [Commit Message Types](#commit-message-types)
-   - [Example Commit Messages](#example-commit-messages)
-2. [How to Contribute](#how-to-contribute)
-   - [Making Changes](#making-changes)
-   - [Creating Pull Requests](#creating-pull-requests)
+   - [Examples](#example-commit-messages)
+2. [Creating Pull Requests](#creating-pull-requests)
 3. [Branching Strategy](#branching-strategy)
 4. [Review and Feedback](#review-and-feedback)
+5. [Naming Conventions](#naming-conventions)
+6. [Review and Feedback](#review-and-eedback)
 
 ---
 
