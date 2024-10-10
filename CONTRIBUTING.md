@@ -8,8 +8,7 @@
    - [Making Changes](#making-changes)
    - [Creating Pull Requests](#creating-pull-requests)
 3. [Branching Strategy](#branching-strategy)
-4. [Code Style Guidelines](#code-style-guidelines)
-5. [Review and Feedback](#review-and-feedback)
+4. [Review and Feedback](#review-and-feedback)
 
 ---
 
