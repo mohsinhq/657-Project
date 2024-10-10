@@ -1,1 +1,1 @@
-## Do read me before submitting
+## Do a read me before submitting
