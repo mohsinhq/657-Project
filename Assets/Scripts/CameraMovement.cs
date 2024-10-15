@@ -5,6 +5,7 @@ public class CameraMovement : MonoBehaviour
     public Transform player; // The player's transform
     public Vector3 offset; // Offset from the player
     public float rotationSpeed; // Speed of camera rotation
+    public float mouseSensitivity = 0.5f;
 
     private float currentRotationAngle = 0f;
 
@@ -31,7 +32,15 @@ public class CameraMovement : MonoBehaviour
             return; // Exit if player reference is null
         }
 
-        // Rotate the camera with left and right arrows
+        // Rotate the camera only while the left mouse button is being held down
+        if (Input.GetMouseButton(0)) // 0 is the left mouse button
+        {
+            // Get mouse X movement and apply sensitivity
+            float mouseX = Input.GetAxis("Mouse X");
+            currentRotationAngle += mouseX * rotationSpeed * mouseSensitivity;
+        }
+
+        // Also, rotate the camera with left and right arrows (keeping your original input handling)
         if (Input.GetKey(KeyCode.LeftArrow))
         {
             currentRotationAngle -= rotationSpeed * Time.deltaTime;
