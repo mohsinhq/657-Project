@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 1f;
-    public float sprintSpeed = 1f;
-    public float jumpForce = 5f;
+    public float moveSpeed;
+    public float sprintSpeed;
+    public float jumpForce;
     public Transform cameraTransform;
 
     private Rigidbody rb;
@@ -16,6 +16,9 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true; // Prevent unwanted rotations
+        moveSpeed = 5f;
+        sprintSpeed = 10f;
+        jumpForce = 5f;
     }
 
     void Update()
