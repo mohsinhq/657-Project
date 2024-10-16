@@ -5,13 +5,13 @@ public class CameraMovement : MonoBehaviour
     public Transform player; // The player's transform
     public Vector3 offset; // Offset from the player
     public float rotationSpeed; // Speed of camera rotation
-    public float mouseSensitivity = 0.5f;
-
+    public float mouseSensitivity;
     private float currentRotationAngle = 0f;
 
     void Start()
     {
         rotationSpeed = 50f;
+        mouseSensitivity = 0.1f;
         // Check if player is assigned
         if (player == null)
         {
