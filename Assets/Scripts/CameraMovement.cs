@@ -6,12 +6,18 @@ public class CameraMovement : MonoBehaviour
     public Vector3 offset; // Offset from the player
     public float rotationSpeed; // Speed of camera rotation
     public float mouseSensitivity;
-    private float currentRotationAngle = 0f;
+
+    private float currentRotationAngleX = 0f; // Horizontal rotation
+    private float currentRotationAngleY = 0f; // Vertical rotation
+
+    public float minYAngle = -60f; // Limits for vertical rotation
+    public float maxYAngle = 60f;
 
     void Start()
     {
         rotationSpeed = 50f;
         mouseSensitivity = 0.1f;
+
         // Check if player is assigned
         if (player == null)
         {
@@ -32,29 +38,40 @@ public class CameraMovement : MonoBehaviour
             return; // Exit if player reference is null
         }
 
-        // Rotate the camera only while the left mouse button is being held down
+        // Rotate the camera while the left mouse button is being held down
         if (Input.GetMouseButton(0)) // 0 is the left mouse button
         {
-            // Get mouse X movement and apply sensitivity
+            // Get mouse X and Y movements and apply sensitivity
             float mouseX = Input.GetAxis("Mouse X");
-            currentRotationAngle += mouseX * rotationSpeed * mouseSensitivity;
+            float mouseY = -Input.GetAxis("Mouse Y"); // Invert Y to mimic typical camera controls
+
+            // Horizontal rotation (around the Y-axis)
+            currentRotationAngleX += mouseX * rotationSpeed * mouseSensitivity;
+
+            // Vertical rotation (around the X-axis), clamped to avoid flipping the camera
+            currentRotationAngleY += mouseY * rotationSpeed * mouseSensitivity;
+            currentRotationAngleY = Mathf.Clamp(currentRotationAngleY, minYAngle, maxYAngle);
         }
 
-        // Also, rotate the camera with left and right arrows (keeping your original input handling)
+        // Rotate the camera with left and right arrows (horizontal rotation)
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            currentRotationAngle -= rotationSpeed * Time.deltaTime;
+            currentRotationAngleX -= rotationSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            currentRotationAngle += rotationSpeed * Time.deltaTime;
+            currentRotationAngleX += rotationSpeed * Time.deltaTime;
         }
 
-        // Calculate the rotation of the camera
-        Quaternion rotation = Quaternion.Euler(0, currentRotationAngle, 0);
+        // Create a quaternion rotation from the angles
+        Quaternion rotationX = Quaternion.Euler(0, currentRotationAngleX, 0); // Horizontal
+        Quaternion rotationY = Quaternion.Euler(currentRotationAngleY, 0, 0); // Vertical
+
+        // Combine both rotations to get the final rotation
+        Quaternion finalRotation = rotationY * rotationX;
 
         // Set the new position and apply rotation
-        Vector3 newPosition = player.position + rotation * offset;
+        Vector3 newPosition = player.position + finalRotation * offset;
         transform.position = newPosition;
 
         // Make the camera look at the player

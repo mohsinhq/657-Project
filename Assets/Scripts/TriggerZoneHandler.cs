@@ -1,61 +1,105 @@
 using UnityEngine;
-using UnityEngine.UI;  // For UI components
-using UnityEngine.SceneManagement;  // For scene transitions
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
+using System.Collections;
 
 public class TriggerZoneHandler : MonoBehaviour
 {
-    public GameObject promptPanel;  // UI Panel to display prompt
-    public Button yesButton;
-    public Button noButton;
+    public GameObject promptPanel;  // The Panel with the prompt message
+    public TMP_Text promptMessage;  // The UI Text element for the prompt message
+    public Button yesButton;  // "Yes" button
+    public Button noButton;   // "No" button
+    public Transform player;  // The player’s transform to move the player when "No" is clicked
+    public Vector3 outsideBoxPosition;  // The new position to move the player when "No" is clicked
+
     private bool isPromptActive = false;
+    private bool isLoading = false;
 
     void Start()
     {
-        promptPanel.SetActive(false);  // Hide prompt on start
+        promptPanel.SetActive(false);  // Hide the panel at the start
         yesButton.onClick.AddListener(OnYesButton);
         noButton.onClick.AddListener(OnNoButton);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && gameObject.CompareTag("PromptZone"))
         {
-            if (gameObject.CompareTag("PromptZone"))  // Orange zone
-            {
-                ShowPrompt();
-            }
-            else if (gameObject.CompareTag("ForcedZone"))  // Red zone
-            {
-                ForceBattle();
-            }
+            ShowPrompt();
+        }
+        else if (gameObject.CompareTag("ForcedZone") && !isLoading)  // Red zone
+        {
+            // Automatically start the loading process when entering red zone
+            StartCoroutine(StartLoadingAnimation());
         }
     }
 
-    void ShowPrompt()
+    public void ShowPrompt()
     {
-        promptPanel.SetActive(true);
+        promptPanel.SetActive(true);  // Show the panel with the prompt
+        promptMessage.SetText("Do you wish to enter battle?");  // Set the prompt message using SetText()
         isPromptActive = true;
+
+        // Make sure the buttons are visible
+        yesButton.gameObject.SetActive(true);
+        noButton.gameObject.SetActive(true);
     }
 
-    void OnYesButton()
+    public void OnYesButton()
     {
         if (isPromptActive)
         {
-            SceneManager.LoadScene("BattleScene");
+            // Hide both buttons
+            yesButton.gameObject.SetActive(false);
+            noButton.gameObject.SetActive(false);
+
+            // Start the loading sequence
+            StartCoroutine(StartLoadingAnimation());
         }
     }
 
-    void OnNoButton()
+    public void OnNoButton()
     {
         if (isPromptActive)
         {
-            promptPanel.SetActive(false);  // Hide prompt and continue exploring
+            // Hide both buttons
+            yesButton.gameObject.SetActive(false);
+            noButton.gameObject.SetActive(false);
+
+            // Hide the prompt panel
+            promptPanel.SetActive(false);
+
+            // Move the player to the outsideBoxPosition
+            player.position = outsideBoxPosition;
+
+            // Mark the prompt as inactive
             isPromptActive = false;
         }
     }
 
-    void ForceBattle()
+    IEnumerator StartLoadingAnimation()
     {
-        SceneManager.LoadScene("BattleScene");  // Automatically load battle scene
+        isLoading = true;  // Prevent multiple loading processes
+        promptMessage.SetText("Loading");  // Initial message
+        promptMessage.alignment = TextAlignmentOptions.Center;
+
+        // Set the background color to red
+        promptPanel.GetComponent<Image>().color = Color.red;
+
+        string[] loadingStates = { "Loading", "Loading.", "Loading..", "Loading..." };
+        int index = 0;
+
+        // Loop through the loading animation for 5 seconds
+        for (int i = 0; i < 5; i++)
+        {
+            promptMessage.SetText(loadingStates[index]);  // Update the message
+            index = (index + 1) % loadingStates.Length;  // Cycle through the states
+            yield return new WaitForSeconds(1f);  // Wait for 1 second between updates
+        }
+
+        // After 5 seconds, load the battle scene
+        SceneManager.LoadScene("BattleScene");
     }
 }
