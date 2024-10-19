@@ -1,80 +1,67 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    public Transform player; // The player's transform
-    public Vector3 offset; // Offset from the player
-    public float rotationSpeed; // Speed of camera rotation
-    public float mouseSensitivity;
+    [SerializeField] private Transform player; // The player's transform
+    [SerializeField] private float rotationSpeed = 0.1f; // Speed of camera rotation
+    [SerializeField] private float xClamp = 75f; // Limits for vertical rotation
+    [SerializeField] private float distanceFromPlayer = 5f; // Distance from the player
+    [SerializeField] private float heightOffset = 2f; // Height offset above the player
 
-    private float currentRotationAngleX = 0f; // Horizontal rotation
-    private float currentRotationAngleY = 0f; // Vertical rotation
+    private float xRotation = 0f; // Vertical rotation
+    private float yRotation = 0f; // Horizontal rotation
+    private PlayerControls playerControls; // Reference to input actions
 
-    public float minYAngle = -60f; // Limits for vertical rotation
-    public float maxYAngle = 60f;
-
-    void Start()
+    private void Awake()
     {
-        rotationSpeed = 50f;
-        mouseSensitivity = 0.1f;
-
-        // Check if player is assigned
-        if (player == null)
-        {
-            Debug.LogError("Player reference is not assigned! Please assign the player GameObject in the Inspector.");
-            return; // Exit if player reference is null
-        }
-
-        // Set the initial offset based on camera and player position
-        offset = transform.position - player.position;
+        playerControls = new PlayerControls();
+        playerControls.Player.Look.performed += ctx => ReceiveInput(ctx.ReadValue<Vector2>());
+        playerControls.Player.Look.canceled += ctx => ReceiveInput(Vector2.zero);
     }
 
-    void LateUpdate()
+    private void OnEnable()
     {
-        // Check if player is assigned
-        if (player == null)
+        playerControls.Player.Enable(); // Enable input actions
+    }
+
+    private void OnDisable()
+    {
+        playerControls.Player.Disable(); // Disable input actions
+    }
+
+    private void LateUpdate()
+    {
+        if (player == null) return; // Exit if player reference is null
+
+        // Check if the left mouse button is being held down
+        if (Mouse.current.leftButton.isPressed)
         {
-            Debug.LogError("Player reference is not assigned! Please assign the player GameObject in the Inspector.");
-            return; // Exit if player reference is null
+            // Calculate rotation based on mouse input
+            Vector2 mouseInput = playerControls.Player.Look.ReadValue<Vector2>();
+            yRotation += mouseInput.x * rotationSpeed; // Horizontal rotation
+            xRotation -= mouseInput.y * rotationSpeed; // Vertical rotation
+            xRotation = Mathf.Clamp(xRotation, -xClamp, xClamp); // Clamp vertical rotation
+
+            // Calculate the desired position and rotation of the camera
+            Quaternion rotation = Quaternion.Euler(xRotation, yRotation, 0);
+            Vector3 position = player.position - rotation * Vector3.forward * distanceFromPlayer; // Position behind the player
+            position.y += heightOffset; // Add height offset
+
+            // Apply the position and rotation to the camera
+            transform.position = position;
+            transform.LookAt(player); // Make the camera look at the player
         }
+    }
 
-        // Rotate the camera while the left mouse button is being held down
-        if (Input.GetMouseButton(0)) // 0 is the left mouse button
-        {
-            // Get mouse X and Y movements and apply sensitivity
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = -Input.GetAxis("Mouse Y"); // Invert Y to mimic typical camera controls
+    private void ReceiveInput(Vector2 mouseInput)
+    {
+        // You can process the input if needed, but it's handled in LateUpdate
+    }
 
-            // Horizontal rotation (around the Y-axis)
-            currentRotationAngleX += mouseX * rotationSpeed * mouseSensitivity;
-
-            // Vertical rotation (around the X-axis), clamped to avoid flipping the camera
-            currentRotationAngleY += mouseY * rotationSpeed * mouseSensitivity;
-            currentRotationAngleY = Mathf.Clamp(currentRotationAngleY, minYAngle, maxYAngle);
-        }
-
-        // Rotate the camera with left and right arrows (horizontal rotation)
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            currentRotationAngleX -= rotationSpeed * Time.deltaTime;
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            currentRotationAngleX += rotationSpeed * Time.deltaTime;
-        }
-
-        // Create a quaternion rotation from the angles
-        Quaternion rotationX = Quaternion.Euler(0, currentRotationAngleX, 0); // Horizontal
-        Quaternion rotationY = Quaternion.Euler(currentRotationAngleY, 0, 0); // Vertical
-
-        // Combine both rotations to get the final rotation
-        Quaternion finalRotation = rotationY * rotationX;
-
-        // Set the new position and apply rotation
-        Vector3 newPosition = player.position + finalRotation * offset;
-        transform.position = newPosition;
-
-        // Make the camera look at the player
-        transform.LookAt(player);
+    private void OnDestroy()
+    {
+        playerControls.Player.Look.performed -= ctx => ReceiveInput(ctx.ReadValue<Vector2>());
+        playerControls.Player.Look.canceled -= ctx => ReceiveInput(Vector2.zero);
     }
 }
