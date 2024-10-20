@@ -81,6 +81,9 @@ public class TriggerZoneHandler : MonoBehaviour
 
     IEnumerator StartLoadingAnimation()
     {
+        yesButton.gameObject.SetActive(false);
+        noButton.gameObject.SetActive(false);
+
         isLoading = true;  // Prevent multiple loading processes
         promptMessage.SetText("Loading");  // Initial message
         promptMessage.alignment = TextAlignmentOptions.Center;
