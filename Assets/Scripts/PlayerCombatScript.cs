@@ -5,12 +5,16 @@ using TMPro;
 public class TurnBasedCombat : MonoBehaviour
 {
     // Health values
-    public int playerHealth = 100;
-    public int bossHealth = 150;
+    public int playerHealth = 150;
+    public int companion1Health = 80;
+    public int companion2Health = 90;
+    public int enemyHealth = 150;
 
     // UI Elements for health bars
     public Slider playerHealthBar;
-    public Slider bossHealthBar;  // This will represent the enemy's health bar on top of the enemy
+    public Slider companion1HealthBar;
+    public Slider companion2HealthBar;
+    public Slider enemyHealthBar;
 
     // UI for damage text and buttons
     public TMP_Text damageText;
@@ -23,8 +27,12 @@ public class TurnBasedCombat : MonoBehaviour
     private int fireDamage = 20;
     private int iceDamage = 15;
 
-    // Boss attack damage
-    private int bossDamage = 10;
+    // Companion damage values
+    private int companion1Damage = 5;
+    private int companion2Damage = 7;
+
+    // enemy attack damage
+    private int enemyDamage = 10;
 
     // Flags to manage turns
     private bool playerTurn = true;
@@ -35,8 +43,14 @@ public class TurnBasedCombat : MonoBehaviour
         playerHealthBar.maxValue = playerHealth;
         playerHealthBar.value = playerHealth;
 
-        bossHealthBar.maxValue = bossHealth;  // This is the health bar for the enemy
-        bossHealthBar.value = bossHealth;
+        companion1HealthBar.maxValue = companion1Health;
+        companion1HealthBar.value = companion1Health;
+
+        companion2HealthBar.maxValue = companion2Health;
+        companion2HealthBar.value = companion2Health;
+
+        enemyHealthBar.maxValue = enemyHealth;
+        enemyHealthBar.value = enemyHealth;
 
         // Add listeners to the buttons for player actions
         pistolButton.onClick.AddListener(() => PlayerAttack(pistolDamage, "Pistol"));
@@ -44,61 +58,107 @@ public class TurnBasedCombat : MonoBehaviour
         iceButton.onClick.AddListener(() => PlayerAttack(iceDamage, "Ice"));
     }
 
-    // Method for the player to attack the boss
+    // Method for the player to attack the enemy
     void PlayerAttack(int damage, string attackType)
     {
-        if (playerTurn && bossHealth > 0 && playerHealth > 0)
+        if (playerTurn && enemyHealth > 0 && playerHealth > 0)
         {
-            // Player attacks the boss
-            bossHealth -= damage;
+            // Player attacks the enemy
+            enemyHealth -= damage;
             UpdateHealthBars();
             damageText.SetText($"Player used {attackType} and dealt {damage} damage!");
 
-            // End player turn and start boss turn
+            // End player turn and trigger companions' turn
             playerTurn = false;
-            Invoke("BossAttack", 2f); // Boss attacks after 2 seconds
+            Invoke("Companion1Attack", 1f);  // Companion 1 attacks after 1 second
         }
     }
 
-    // Method for the boss to attack the player
-    void BossAttack()
+    // Method for Companion 1 to attack the enemy
+    void Companion1Attack()
     {
-        if (bossHealth > 0 && playerHealth > 0)
+        if (enemyHealth > 0)
         {
-            // Boss attacks the player
-            playerHealth -= bossDamage;
+            enemyHealth -= companion1Damage;
             UpdateHealthBars();
-            damageText.SetText($"Boss attacked and dealt {bossDamage} damage!");
+            damageText.SetText($"Companion 1 dealt {companion1Damage} damage!");
 
-            // End boss turn and switch back to player's turn
-            playerTurn = true;
+            // Trigger Companion 2 attack after 1 second
+            Invoke("Companion2Attack", 1f);
         }
+    }
 
-        // Check if someone has won
-        CheckForEnd();
+    // Method for Companion 2 to attack the enemy
+    void Companion2Attack()
+    {
+        if (enemyHealth > 0)
+        {
+            enemyHealth -= companion2Damage;
+            UpdateHealthBars();
+            damageText.SetText($"Companion 2 dealt {companion2Damage} damage!");
+
+            // Trigger enemy attack after 2 seconds
+            Invoke("enemyAttack", 2f);
+        }
+    }
+
+    // Method for the enemy to randomly attack either the player or companions
+    void enemyAttack()
+    {
+        if (enemyHealth > 0)
+        {
+            int target = Random.Range(0, 3); // Randomly select 0 (Player), 1 (Companion 1), or 2 (Companion 2)
+
+            if (target == 0)
+            {
+                // enemy attacks the player
+                playerHealth -= enemyDamage;
+                damageText.SetText($"enemy attacked the player and dealt {enemyDamage} damage!");
+            }
+            else if (target == 1)
+            {
+                // enemy attacks Companion 1
+                companion1Health -= enemyDamage;
+                damageText.SetText($"enemy attacked Companion 1 and dealt {enemyDamage} damage!");
+            }
+            else if (target == 2)
+            {
+                // enemy attacks Companion 2
+                companion2Health -= enemyDamage;
+                damageText.SetText($"enemy attacked Companion 2 and dealt {enemyDamage} damage!");
+            }
+
+            // Update all health bars after the attack
+            UpdateHealthBars();
+
+            // End enemy turn and switch back to player's turn
+            playerTurn = true;
+
+            // Check for end of game
+            CheckForEnd();
+        }
     }
 
     // Method to update the health bars
     void UpdateHealthBars()
     {
-        // Update the player's health bar
         playerHealthBar.value = playerHealth;
-
-        // Update the enemy's health bar
-        bossHealthBar.value = bossHealth;
+        enemyHealthBar.value = enemyHealth;
+        companion1HealthBar.value = companion1Health;
+        companion2HealthBar.value = companion2Health;
     }
 
     // Check if the game has ended
     void CheckForEnd()
     {
-        if (bossHealth <= 0)
+        if (enemyHealth <= 0)
         {
-            damageText.SetText("Player has won!");
+            damageText.SetText("Player and companions have won!");
             EndGame();
         }
-        else if (playerHealth <= 0)
+        else if (playerHealth <= 0 && companion1Health <= 0 && companion2Health <= 0)
         {
-            damageText.SetText("Boss has won!");
+            damageText.SetText("enemy has won!");
             EndGame();
         }
     }
