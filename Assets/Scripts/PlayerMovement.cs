@@ -9,9 +9,6 @@ public class PlayerMovement : MonoBehaviour
 {
     //The start of this code simply declares varibles and initilaises thr movement variables with our predefined walk and run speeds
 
-    public float PlayerMovementSpeed = 5f; 
-    public float PlayerRunningSpeed = 10f;
-    public float PlayerJumpingHeight = 5f;
     private bool PlayerOnTheFloor;
     private PlayerControls playerControls;
     public Transform PlayerMainCam;
@@ -38,12 +35,12 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 MovementLocation = (PlayerMainCam.forward * UsersKeyStroke.y + PlayerMainCam.right * UsersKeyStroke.x).normalized; // .noramlised prevents faster diagonal travel
         MovementLocation.y = 0; // stops the player from bopping up and down as they move
-        float SpeedOfMovement = CurrentlyRunning ? PlayerRunningSpeed : PlayerMovementSpeed;
+        float SpeedOfMovement = CurrentlyRunning ? 10f : 5f;
         PlayerRigidBody.MovePosition(transform.position + MovementLocation * SpeedOfMovement * Time.deltaTime);
     }
 
     //Makes a player jump by first checking whether the player is not already jumping (by checking if player is not touching the floor)
-    private void MakePlayerJump() { if (PlayerOnTheFloor) { PlayerRigidBody.AddForce(Vector3.up * PlayerJumpingHeight, ForceMode.Impulse); } }
+    private void MakePlayerJump() { if (PlayerOnTheFloor) { PlayerRigidBody.AddForce(Vector3.up * 5f, ForceMode.Impulse); } }
 
     void OnCollisionEnter(Collision Touching) { if (Touching.gameObject.CompareTag("Floor")) { PlayerOnTheFloor = true; } } // checks if player is touching the floor
 
