@@ -1,16 +1,18 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/*This code is used to allow the player to move the camera
+ view around, using unity's new input system via mouse delta*/
 public class CameraMovement : MonoBehaviour
 {
-    public Transform CurrentPlayer; // The player's transform
+    public Transform CurrentPlayer;
     public float rotationSpeed = 0.1f; // Speed of camera rotation
 
-    private PlayerControls playerControls;
-    private float xAxisRotation = 0f; // Vertical rotation
-    private float yAxisRotation = 0f; // Horizontal rotation
+    private PlayerControls playerControls; // our input compiled script
+    private float xAxisRotation = 0f; 
+    private float yAxisRotation = 0f;
 
-    void Start()
+    void Start() // enables the input script when starting the code
     {
         playerControls = new PlayerControls();
         playerControls.Player.Enable(); // Enable input actions
