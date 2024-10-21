@@ -3,53 +3,70 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System.Linq;
 
 public class BattleScript : MonoBehaviour
 {
     // Health values
     public int playerHealth = 150;
     public int companion1Health = 80;
-    public int companion2Health = 90;
     public int enemyHealth = 150;
+    public int enemyDamage = 10;
+
+    // Defense value for the player and companion
+    private int playerDefense = 0;
+    private int companion1Defense = 0;
 
     // UI Elements for health bars
     public Slider playerHealthBar;
     public Slider companion1HealthBar;
-    public Slider companion2HealthBar;
     public Slider enemyHealthBar;
 
     // UI for damage text and buttons
     public TMP_Text damageText;
     public TMP_Text beginText;
     public TMP_Text statusText;
-    public Button pistolButton;
-    public Button fireButton;
-    public Button iceButton;
 
-    // Damage values for player abilities
-    private int pistolDamage = 10;
-    private int fireDamage = 20;
-    private int iceDamage = 15;
+    // Card buttons and texts
+    public Button weaponCardButton;
+    public Button magic1CardButton;
+    public Button magic2CardButton;
+    public Button defenseCardButton;
+    public TMP_Text weaponCardText;
+    public TMP_Text magic1CardText;
+    public TMP_Text magic2CardText;
+    public TMP_Text defenseCardText;
+    public Button playButton;
 
-    // Companion damage values
-    private int companion1Damage = 5;
-    private int companion2Damage = 7;
+    // Card definitions
+    public List<string> weaponCards = new List<string> { "Pistol", "Sword", "AR", "Bow & Arrow" };
+    public List<string> magicCards = new List<string> { "Fire", "Ice", "Poison", "Storm" };
+    public List<string> defenseCards = new List<string> { "Lvl 1 Defense", "Lvl 2 Defense", "Lvl 3 Defense" };
 
-    // enemy attack damage
-    private int enemyDamage = 10;
+    // Player's selected cards
+    private string playerWeaponCard;
+    private string playerMagicCard1;
+    private string playerMagicCard2;
+    private string playerDefenseCard;
+
+    // Companion's weapon and defense cards
+    private string companion1WeaponCard;
+    private string companion1DefenseCard;
+
+    // Enemy's weapon card
+    private string enemyWeaponCard;
 
     // Flags to manage turns
     private bool playerTurn = true;
     private bool playerWon = false;
+    private string selectedCardType = "";
 
-    public Camera battleCamera;  // Reference to the Main Camera
-    public Vector3 cameraPosition = new Vector3(-37, 24, 152);  // Updated position
-    public Vector3 cameraRotation = new Vector3(45, 90, 0);  // Updated rotation
-    public Vector3 cameraScale = new Vector3(1, 1, 1);  // Updated scale
-
+    public Camera mainCamera;  // Reference to the Main Camera
 
     void Start()
     {
+        AssignRandomCards();
         StartCoroutine(ShowBeginMessage());
 
         // Initialize health bars
@@ -59,170 +76,204 @@ public class BattleScript : MonoBehaviour
         companion1HealthBar.maxValue = companion1Health;
         companion1HealthBar.value = companion1Health;
 
-        companion2HealthBar.maxValue = companion2Health;
-        companion2HealthBar.value = companion2Health;
-
         enemyHealthBar.maxValue = enemyHealth;
         enemyHealthBar.value = enemyHealth;
 
-        if (battleCamera == null)
+        if (mainCamera == null)
         {
-            battleCamera = Camera.main;  // If no camera is assigned, use the Main Camera
+            mainCamera = Camera.main;  // If no camera is assigned, use the Main Camera
         }
-
-        // Set the camera position, rotation, and scale
-        battleCamera.transform.position = cameraPosition;
-        battleCamera.transform.rotation = Quaternion.Euler(cameraRotation);
-        battleCamera.transform.localScale = cameraScale;
 
         // Add listeners to the buttons for player actions
-        pistolButton.onClick.AddListener(() => PlayerAttack(pistolDamage, "Pistol"));
-        fireButton.onClick.AddListener(() => PlayerAttack(fireDamage, "Fire"));
-        iceButton.onClick.AddListener(() => PlayerAttack(iceDamage, "Ice"));
-
-        
+        weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
+        magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
+        magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
+        defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));
+        playButton.onClick.AddListener(() => ExecuteTurn());
     }
 
-    // Coroutine to show "Begin" text for 3 seconds before starting the game
-    IEnumerator ShowBeginMessage()
+    // Randomly assign cards to the player, companion, and enemy
+    void AssignRandomCards()
     {
-        string[] beginStates = { "Begin...", "Begin..", "Begin.", "Begin" };
-        int index = 0;
+        playerWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
 
-        // Loop through each state for 3 seconds (1 second per state)
-        for (int i = 0; i < beginStates.Length; i++)
+        // Ensure unique magic cards are assigned
+        var shuffledMagicCards = new List<string>(magicCards);
+        shuffledMagicCards = shuffledMagicCards.OrderBy(x => Random.value).ToList();
+        playerMagicCard1 = shuffledMagicCards[0];
+        playerMagicCard2 = shuffledMagicCards[1];
+
+        playerDefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
+
+        // Assign only one weapon card to the companion
+        companion1WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
+        companion1DefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
+
+        enemyWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
+
+        // Update the UI with the card names
+        weaponCardText.SetText(playerWeaponCard);
+        magic1CardText.SetText(playerMagicCard1);
+        magic2CardText.SetText(playerMagicCard2);
+        defenseCardText.SetText(playerDefenseCard);
+    }
+
+    void SelectCard(string cardType)
+    {
+        selectedCardType = cardType;
+        damageText.SetText($"Player selected {cardType} card!");
+    }
+
+    // This is where the selected card action is executed when Play is clicked
+    void ExecuteTurn()
+    {
+        if (playerTurn && !string.IsNullOrEmpty(selectedCardType))
         {
-            beginText.SetText(beginStates[index]);
-            index = (index + 1) % beginStates.Length;  // Cycle through the states
-            yield return new WaitForSeconds(1f);  // Wait for 1 second between updates
+            if (selectedCardType == "Weapon")
+            {
+                PlayerAttack(playerWeaponCard);
+            }
+            else if (selectedCardType == "Magic1")
+            {
+                PlayerAttack(playerMagicCard1);
+            }
+            else if (selectedCardType == "Magic2")
+            {
+                PlayerAttack(playerMagicCard2);
+            }
+            else if (selectedCardType == "Defense")
+            {
+                PlayerDefend(playerDefenseCard);
+            }
+
+            playerTurn = false;
+            Invoke("Companion1Attack", 1f);
         }
-
-        beginText.SetText("");
     }
 
-    // Method for the player to attack the enemy
-    void PlayerAttack(int damage, string attackType)
+    // Player attack method
+    void PlayerAttack(string card)
     {
-        if (playerTurn && enemyHealth > 0 && playerHealth > 0)
+        if (enemyHealth > 0 && playerHealth > 0)
         {
-            // Player attacks the enemy
+            int damage = CalculateCardDamage(card);
             enemyHealth -= damage;
             UpdateHealthBars();
-            damageText.SetText($"Player used {attackType} and dealt {damage} damage!");
+            damageText.SetText($"Player used {card} and dealt {damage} damage!");
 
-            // Check if the enemy is dead after the player's attack
             CheckForEnd();
-
-            if (enemyHealth > 0)  // Continue only if the enemy is still alive
-            {
-                // End player turn and trigger companions' turn
-                playerTurn = false;
-                Invoke("Companion1Attack", 1f);  // Companion 1 attacks after 1 second
-            }
         }
     }
 
-    // Method for Companion 1 to attack the enemy
+    // Player defend method
+    void PlayerDefend(string card)
+    {
+        switch (card)
+        {
+            case "Lvl 1 Defense":
+                playerDefense = 5;
+                break;
+            case "Lvl 2 Defense":
+                playerDefense = 10;
+                break;
+            case "Lvl 3 Defense":
+                playerDefense = 15;
+                break;
+        }
+
+        damageText.SetText($"Player selected {card}, defense set to {playerDefense}!");
+    }
+
+    // Companion 1 attack method
     void Companion1Attack()
     {
         if (enemyHealth > 0)
         {
-            enemyHealth -= companion1Damage;
+            int damage = CalculateCardDamage(companion1WeaponCard);
+            enemyHealth -= damage;
             UpdateHealthBars();
-            damageText.SetText($"Companion 1 dealt {companion1Damage} damage!");
+            damageText.SetText($"Companion 1 dealt {damage} damage!");
 
-            // Check if the enemy is dead after Companion 1's attack
             CheckForEnd();
-
-            if (enemyHealth > 0)  // Continue only if the enemy is still alive
+            if (enemyHealth > 0)
             {
-                // Trigger Companion 2 attack after 1 second
-                Invoke("Companion2Attack", 1f);
+                Invoke("enemyAttack", 2f);  // Trigger enemy attack after 2 seconds
             }
         }
     }
 
-
-    // Method for Companion 2 to attack the enemy
-    void Companion2Attack()
-    {
-        if (enemyHealth > 0)
-        {
-            enemyHealth -= companion2Damage;
-            UpdateHealthBars();
-            damageText.SetText($"Companion 2 dealt {companion2Damage} damage!");
-
-            // Check if the enemy is dead after Companion 2's attack
-            CheckForEnd();
-
-            if (enemyHealth > 0)  // Continue only if the enemy is still alive
-            {
-                // Trigger enemy attack after 2 seconds
-                Invoke("enemyAttack", 2f);
-            }
-        }
-    }
-
-    // Method for the enemy to randomly attacks all player friendlies but randomised the attack option
+    // Enemy attack method
     void enemyAttack()
     {
         if (enemyHealth > 0)
         {
-            // Create an array for the targets (Player, Companion 1, Companion 2)
-            int[] targets = { 0, 1, 2 };
+            int[] targets = { 0, 1 };  // 0 for player, 1 for companion
+            System.Random rnd = new System.Random();
+            int target = targets.OrderBy(x => rnd.Next()).First();
 
-            // Shuffle the array to randomize the attack order
-            for (int i = 0; i < targets.Length; i++)
+            if (target == 0)
             {
-                int rnd = Random.Range(0, targets.Length);
-                int temp = targets[rnd];
-                targets[rnd] = targets[i];
-                targets[i] = temp;
+                int finalDamage = Mathf.Max(0, enemyDamage - playerDefense);
+                playerHealth -= finalDamage;
+                damageText.SetText($"Enemy attacked the player and dealt {finalDamage} damage!");
+            }
+            else
+            {
+                int finalDamage = Mathf.Max(0, enemyDamage - companion1Defense);
+                companion1Health -= finalDamage;
+                damageText.SetText($"Enemy attacked Companion 1 and dealt {finalDamage} damage!");
             }
 
-            // Perform attacks on each target in the shuffled order
-            foreach (int target in targets)
-            {
-                if (target == 0)
-                {
-                    // Enemy attacks the player
-                    playerHealth -= enemyDamage;
-                    damageText.SetText($"enemy attacked the player and dealt {enemyDamage} damage!");
-                }
-                else if (target == 1)
-                {
-                    // Enemy attacks Companion 1
-                    companion1Health -= enemyDamage;
-                    damageText.SetText($"enemy attacked Companion 1 and dealt {enemyDamage} damage!");
-                }
-                else if (target == 2)
-                {
-                    // Enemy attacks Companion 2
-                    companion2Health -= enemyDamage;
-                    damageText.SetText($"enemy attacked Companion 2 and dealt {enemyDamage} damage!");
-                }
-
-                // Check if the game ends after each attack
-                CheckForEnd();
-
-                // If the game ended, exit early
-                if (playerHealth <= 0 && companion1Health <= 0 && companion2Health <= 0)
-                {
-                    StartCoroutine(EndGame());
-                    return;
-                }
-            }
-
-            // Update all health bars after the attacks
-            UpdateHealthBars();
-
-            // End enemy turn and switch back to player's turn
+            CheckForEnd();
             playerTurn = true;
+
+            // Reset defenses after enemy attack
+            playerDefense = 0;
+            companion1Defense = 0;
         }
         else
         {
             StartCoroutine(EndGame());
         }
+    }
+
+    // Calculate damage based on the card type
+    int CalculateCardDamage(string card)
+    {
+        int damage = 0;
+
+        switch (card)
+        {
+            case "Pistol":
+                damage = 10;
+                break;
+            case "Sword":
+                damage = 15;
+                break;
+            case "AR":
+                damage = 20;
+                break;
+            case "Bow & Arrow":
+                damage = 18;
+                break;
+            case "Fire":
+                damage = 20;
+                break;
+            case "Ice":
+                damage = 15;
+                break;
+            case "Poison":
+                damage = 12;
+                break;
+            case "Storm":
+                damage = 25;
+                break;
+            default:
+                damage = 0;
+                break;
+        }
+
+        return damage;
     }
 
     // Method to update the health bars
@@ -231,44 +282,51 @@ public class BattleScript : MonoBehaviour
         playerHealthBar.value = playerHealth;
         enemyHealthBar.value = enemyHealth;
         companion1HealthBar.value = companion1Health;
-        companion2HealthBar.value = companion2Health;
     }
 
+    // Coroutine to end the game and show result
     IEnumerator EndGame()
     {
-        string result = "Victory";
-
-        if (!playerWon)
-        {
-            result = "Defeat...";
-        }
-        // Disable input buttons after the game ends
-        pistolButton.interactable = false;
-        fireButton.interactable = false;
-        iceButton.interactable = false;
-
-        // Show Victory or Defeat message
+        string result = playerWon ? "Victory" : "Defeat...";
         statusText.SetText(result);
-        yield return new WaitForSeconds(3f);  // Wait for 3 seconds to show the message
 
-        // After showing the message, transition back to ExplorationScene
+        weaponCardButton.interactable = false;
+        magic1CardButton.interactable = false;
+        magic2CardButton.interactable = false;
+        defenseCardButton.interactable = false;
+
+        yield return new WaitForSeconds(3f);
+
         SceneManager.LoadScene("ExplorationScene");
     }
 
-    // Method to check if the game has ended
     void CheckForEnd()
     {
         if (enemyHealth <= 0)
         {
             playerWon = true;
             StartCoroutine(EndGame());
-            return;
         }
-        else if (playerHealth <= 0 && companion1Health <= 0 && companion2Health <= 0)
+        else if (playerHealth <= 0 && companion1Health <= 0)
         {
             playerWon = false;
             StartCoroutine(EndGame());
-            return;
         }
+    }
+
+    // Coroutine to show the "Begin" text at the start of the battle
+    IEnumerator ShowBeginMessage()
+    {
+        string[] beginStates = { "Begin...", "Begin..", "Begin.", "Begin" };
+        int index = 0;
+
+        for (int i = 0; i < beginStates.Length; i++)
+        {
+            beginText.SetText(beginStates[index]);
+            index = (index + 1) % beginStates.Length;
+            yield return new WaitForSeconds(1f);
+        }
+
+        beginText.SetText("");
     }
 }
