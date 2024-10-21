@@ -5,6 +5,7 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
+
 public class BattleScript : MonoBehaviour
 {
     // Health values
@@ -13,6 +14,9 @@ public class BattleScript : MonoBehaviour
     public int companion2Health = 90;
     public int enemyHealth = 150;
     public int enemyDamage = 10;
+
+    // Defense value for the player
+    private int playerDefense = 0;
 
     // UI Elements for health bars
     public Slider playerHealthBar;
@@ -29,19 +33,23 @@ public class BattleScript : MonoBehaviour
     public Button weaponCardButton;
     public Button magic1CardButton;
     public Button magic2CardButton;
+    public Button defenseCardButton; // New defense button
     public TMP_Text weaponCardText;
     public TMP_Text magic1CardText;
     public TMP_Text magic2CardText;
+    public TMP_Text defenseCardText; // Text for the defense card
     public Button playButton;
 
     // Card definitions
     public List<string> weaponCards = new List<string> { "Pistol", "Sword", "AR", "Bow & Arrow" };
     public List<string> magicCards = new List<string> { "Fire", "Ice", "Poison", "Storm" };
+    public List<string> defenseCards = new List<string> { "Lvl 1 Defense", "Lvl 2 Defense", "Lvl 3 Defense" };  // Defense cards
 
     // Player's selected cards
     private string playerWeaponCard;
     private string playerMagicCard1;
     private string playerMagicCard2;
+    private string playerDefenseCard;
 
     // Companion's weapon cards
     private string companion1WeaponCard;
@@ -53,7 +61,7 @@ public class BattleScript : MonoBehaviour
     // Flags to manage turns
     private bool playerTurn = true;
     private bool playerWon = false;
-    private string selectedCardType = ""; // Stores which card the player selects (Weapon, Magic1, Magic2)
+    private string selectedCardType = ""; // Stores which card the player selects (Weapon, Magic1, Magic2, Defense)
 
     public Camera mainCamera;  // Reference to the Main Camera
 
@@ -84,16 +92,18 @@ public class BattleScript : MonoBehaviour
         weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
         magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
         magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
+        defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));  // Defense card listener
         playButton.onClick.AddListener(() => ExecuteTurn());  // Play button executes the selected action
     }
 
     // Randomly assign cards to the player, companions, and enemy
     void AssignRandomCards()
     {
-        // Assign 1 weapon card and 2 magic cards to the player
+        // Assign 1 weapon card, 2 magic cards, and 1 defense card to the player
         playerWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
         playerMagicCard1 = magicCards[Random.Range(0, magicCards.Count)];
         playerMagicCard2 = magicCards[Random.Range(0, magicCards.Count)];
+        playerDefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
 
         // Assign only weapon cards to companions and enemy
         companion1WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
@@ -104,14 +114,14 @@ public class BattleScript : MonoBehaviour
         weaponCardText.SetText(playerWeaponCard);
         magic1CardText.SetText(playerMagicCard1);
         magic2CardText.SetText(playerMagicCard2);
+        defenseCardText.SetText(playerDefenseCard);
     }
 
     // Method for the player to select a card, but the action is not executed yet
     void SelectCard(string cardType)
     {
-        damageText.SetText("Select a card to play!");
         selectedCardType = cardType; // Stores the selected card type to be used when Play is pressed
-        //statusText.SetText($"Player selected {cardType} card!");
+        damageText.SetText($"Player selected {cardType} card!");
     }
 
     // This is where the selected card action is executed when Play is clicked
@@ -130,6 +140,10 @@ public class BattleScript : MonoBehaviour
             else if (selectedCardType == "Magic2")
             {
                 PlayerAttack(playerMagicCard2);
+            }
+            else if (selectedCardType == "Defense")
+            {
+                PlayerDefend(playerDefenseCard);
             }
 
             // After the player executes their turn, move to companion attacks
@@ -150,6 +164,26 @@ public class BattleScript : MonoBehaviour
 
             CheckForEnd();
         }
+    }
+
+    // New method for defense
+    void PlayerDefend(string card)
+    {
+        // Assign defense values based on the card level
+        switch (card)
+        {
+            case "Lvl 1 Defense":
+                playerDefense = 5;  // Reduces enemy damage by 5
+                break;
+            case "Lvl 2 Defense":
+                playerDefense = 10; // Reduces enemy damage by 10
+                break;
+            case "Lvl 3 Defense":
+                playerDefense = 15; // Reduces enemy damage by 15
+                break;
+        }
+
+        damageText.SetText($"Player selected {card}, defense set to {playerDefense}!");
     }
 
     // Calculate damage based on the card type
@@ -238,8 +272,10 @@ public class BattleScript : MonoBehaviour
             {
                 if (target == 0)
                 {
-                    playerHealth -= enemyDamage;
-                    damageText.SetText($"Enemy attacked the player and dealt {enemyDamage} damage!");
+                    // Apply player defense reduction
+                    int finalDamage = Mathf.Max(0, enemyDamage - playerDefense); // Enemy damage reduced by defense
+                    playerHealth -= finalDamage;
+                    damageText.SetText($"Enemy attacked the player and dealt {finalDamage} damage!");
                 }
                 else if (target == 1)
                 {
@@ -262,6 +298,9 @@ public class BattleScript : MonoBehaviour
 
             UpdateHealthBars();
             playerTurn = true;
+
+            // Reset defense after enemy attack
+            playerDefense = 0;
         }
         else
         {
@@ -288,6 +327,7 @@ public class BattleScript : MonoBehaviour
         weaponCardButton.interactable = false;
         magic1CardButton.interactable = false;
         magic2CardButton.interactable = false;
+        defenseCardButton.interactable = false;
 
         yield return new WaitForSeconds(3f);
 
@@ -324,6 +364,5 @@ public class BattleScript : MonoBehaviour
         }
 
         beginText.SetText("");
-        damageText.SetText("Select a card to play!");
     }
 }
