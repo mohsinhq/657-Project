@@ -11,17 +11,16 @@ public class BattleScript : MonoBehaviour
     // Health values
     public int playerHealth = 150;
     public int companion1Health = 80;
-    public int companion2Health = 90;
     public int enemyHealth = 150;
     public int enemyDamage = 10;
 
-    // Defense value for the player
+    // Defense value for the player and companion
     private int playerDefense = 0;
+    private int companion1Defense = 0;
 
     // UI Elements for health bars
     public Slider playerHealthBar;
     public Slider companion1HealthBar;
-    public Slider companion2HealthBar;
     public Slider enemyHealthBar;
 
     // UI for damage text and buttons
@@ -33,17 +32,17 @@ public class BattleScript : MonoBehaviour
     public Button weaponCardButton;
     public Button magic1CardButton;
     public Button magic2CardButton;
-    public Button defenseCardButton; // New defense button
+    public Button defenseCardButton;
     public TMP_Text weaponCardText;
     public TMP_Text magic1CardText;
     public TMP_Text magic2CardText;
-    public TMP_Text defenseCardText; // Text for the defense card
+    public TMP_Text defenseCardText;
     public Button playButton;
 
     // Card definitions
     public List<string> weaponCards = new List<string> { "Pistol", "Sword", "AR", "Bow & Arrow" };
     public List<string> magicCards = new List<string> { "Fire", "Ice", "Poison", "Storm" };
-    public List<string> defenseCards = new List<string> { "Lvl 1 Defense", "Lvl 2 Defense", "Lvl 3 Defense" };  // Defense cards
+    public List<string> defenseCards = new List<string> { "Lvl 1 Defense", "Lvl 2 Defense", "Lvl 3 Defense" };
 
     // Player's selected cards
     private string playerWeaponCard;
@@ -51,9 +50,9 @@ public class BattleScript : MonoBehaviour
     private string playerMagicCard2;
     private string playerDefenseCard;
 
-    // Companion's weapon cards
+    // Companion's weapon and defense cards
     private string companion1WeaponCard;
-    private string companion2WeaponCard;
+    private string companion1DefenseCard;
 
     // Enemy's weapon card
     private string enemyWeaponCard;
@@ -61,7 +60,7 @@ public class BattleScript : MonoBehaviour
     // Flags to manage turns
     private bool playerTurn = true;
     private bool playerWon = false;
-    private string selectedCardType = ""; // Stores which card the player selects (Weapon, Magic1, Magic2, Defense)
+    private string selectedCardType = "";
 
     public Camera mainCamera;  // Reference to the Main Camera
 
@@ -77,9 +76,6 @@ public class BattleScript : MonoBehaviour
         companion1HealthBar.maxValue = companion1Health;
         companion1HealthBar.value = companion1Health;
 
-        companion2HealthBar.maxValue = companion2Health;
-        companion2HealthBar.value = companion2Health;
-
         enemyHealthBar.maxValue = enemyHealth;
         enemyHealthBar.value = enemyHealth;
 
@@ -92,22 +88,27 @@ public class BattleScript : MonoBehaviour
         weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
         magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
         magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
-        defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));  // Defense card listener
-        playButton.onClick.AddListener(() => ExecuteTurn());  // Play button executes the selected action
+        defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));
+        playButton.onClick.AddListener(() => ExecuteTurn());
     }
 
-    // Randomly assign cards to the player, companions, and enemy
+    // Randomly assign cards to the player, companion, and enemy
     void AssignRandomCards()
     {
-        // Assign 1 weapon card, 2 magic cards, and 1 defense card to the player
         playerWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
-        playerMagicCard1 = magicCards[Random.Range(0, magicCards.Count)];
-        playerMagicCard2 = magicCards[Random.Range(0, magicCards.Count)];
+
+        // Ensure unique magic cards are assigned
+        var shuffledMagicCards = new List<string>(magicCards);
+        shuffledMagicCards = shuffledMagicCards.OrderBy(x => Random.value).ToList();
+        playerMagicCard1 = shuffledMagicCards[0];
+        playerMagicCard2 = shuffledMagicCards[1];
+
         playerDefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
 
-        // Assign only weapon cards to companions and enemy
+        // Assign only one weapon card to the companion
         companion1WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
-        companion2WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
+        companion1DefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
+
         enemyWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
 
         // Update the UI with the card names
@@ -117,10 +118,9 @@ public class BattleScript : MonoBehaviour
         defenseCardText.SetText(playerDefenseCard);
     }
 
-    // Method for the player to select a card, but the action is not executed yet
     void SelectCard(string cardType)
     {
-        selectedCardType = cardType; // Stores the selected card type to be used when Play is pressed
+        selectedCardType = cardType;
         damageText.SetText($"Player selected {cardType} card!");
     }
 
@@ -146,13 +146,12 @@ public class BattleScript : MonoBehaviour
                 PlayerDefend(playerDefenseCard);
             }
 
-            // After the player executes their turn, move to companion attacks
             playerTurn = false;
             Invoke("Companion1Attack", 1f);
         }
     }
 
-    // Player attack method, takes the selected card to calculate damage
+    // Player attack method
     void PlayerAttack(string card)
     {
         if (enemyHealth > 0 && playerHealth > 0)
@@ -166,24 +165,76 @@ public class BattleScript : MonoBehaviour
         }
     }
 
-    // New method for defense
+    // Player defend method
     void PlayerDefend(string card)
     {
-        // Assign defense values based on the card level
         switch (card)
         {
             case "Lvl 1 Defense":
-                playerDefense = 5;  // Reduces enemy damage by 5
+                playerDefense = 5;
                 break;
             case "Lvl 2 Defense":
-                playerDefense = 10; // Reduces enemy damage by 10
+                playerDefense = 10;
                 break;
             case "Lvl 3 Defense":
-                playerDefense = 15; // Reduces enemy damage by 15
+                playerDefense = 15;
                 break;
         }
 
         damageText.SetText($"Player selected {card}, defense set to {playerDefense}!");
+    }
+
+    // Companion 1 attack method
+    void Companion1Attack()
+    {
+        if (enemyHealth > 0)
+        {
+            int damage = CalculateCardDamage(companion1WeaponCard);
+            enemyHealth -= damage;
+            UpdateHealthBars();
+            damageText.SetText($"Companion 1 dealt {damage} damage!");
+
+            CheckForEnd();
+            if (enemyHealth > 0)
+            {
+                Invoke("enemyAttack", 2f);  // Trigger enemy attack after 2 seconds
+            }
+        }
+    }
+
+    // Enemy attack method
+    void enemyAttack()
+    {
+        if (enemyHealth > 0)
+        {
+            int[] targets = { 0, 1 };  // 0 for player, 1 for companion
+            System.Random rnd = new System.Random();
+            int target = targets.OrderBy(x => rnd.Next()).First();
+
+            if (target == 0)
+            {
+                int finalDamage = Mathf.Max(0, enemyDamage - playerDefense);
+                playerHealth -= finalDamage;
+                damageText.SetText($"Enemy attacked the player and dealt {finalDamage} damage!");
+            }
+            else
+            {
+                int finalDamage = Mathf.Max(0, enemyDamage - companion1Defense);
+                companion1Health -= finalDamage;
+                damageText.SetText($"Enemy attacked Companion 1 and dealt {finalDamage} damage!");
+            }
+
+            CheckForEnd();
+            playerTurn = true;
+
+            // Reset defenses after enemy attack
+            playerDefense = 0;
+            companion1Defense = 0;
+        }
+        else
+        {
+            StartCoroutine(EndGame());
+        }
     }
 
     // Calculate damage based on the card type
@@ -225,96 +276,12 @@ public class BattleScript : MonoBehaviour
         return damage;
     }
 
-    // Companion 1 attack method
-    void Companion1Attack()
-    {
-        if (enemyHealth > 0)
-        {
-            int damage = CalculateCardDamage(companion1WeaponCard);
-            enemyHealth -= damage;
-            UpdateHealthBars();
-            damageText.SetText($"Companion 1 dealt {damage} damage!");
-
-            CheckForEnd();
-            if (enemyHealth > 0)
-            {
-                Invoke("Companion2Attack", 1f);  // Trigger Companion 2 attack after 1 second
-            }
-        }
-    }
-
-    // Companion 2 attack method
-    void Companion2Attack()
-    {
-        if (enemyHealth > 0)
-        {
-            int damage = CalculateCardDamage(companion2WeaponCard);
-            enemyHealth -= damage;
-            UpdateHealthBars();
-            damageText.SetText($"Companion 2 dealt {damage} damage!");
-
-            CheckForEnd();
-            if (enemyHealth > 0)
-            {
-                Invoke("enemyAttack", 2f);  // Trigger enemy attack after 2 seconds
-            }
-        }
-    }
-
-    // Enemy attack method, randomly targets player or companions
-    void enemyAttack()
-    {
-        if (enemyHealth > 0)
-        {
-            int[] targets = { 0, 1, 2 };
-            System.Random rnd = new System.Random();
-            foreach (int target in targets.OrderBy(x => rnd.Next()))
-            {
-                if (target == 0)
-                {
-                    // Apply player defense reduction
-                    int finalDamage = Mathf.Max(0, enemyDamage - playerDefense); // Enemy damage reduced by defense
-                    playerHealth -= finalDamage;
-                    damageText.SetText($"Enemy attacked the player and dealt {finalDamage} damage!");
-                }
-                else if (target == 1)
-                {
-                    companion1Health -= enemyDamage;
-                    damageText.SetText($"Enemy attacked Companion 1 and dealt {enemyDamage} damage!");
-                }
-                else if (target == 2)
-                {
-                    companion2Health -= enemyDamage;
-                    damageText.SetText($"Enemy attacked Companion 2 and dealt {enemyDamage} damage!");
-                }
-
-                CheckForEnd();
-                if (playerHealth <= 0 && companion1Health <= 0 && companion2Health <= 0)
-                {
-                    StartCoroutine(EndGame());
-                    return;
-                }
-            }
-
-            UpdateHealthBars();
-            playerTurn = true;
-
-            // Reset defense after enemy attack
-            playerDefense = 0;
-        }
-        else
-        {
-            StartCoroutine(EndGame());
-        }
-    }
-
     // Method to update the health bars
     void UpdateHealthBars()
     {
         playerHealthBar.value = playerHealth;
         enemyHealthBar.value = enemyHealth;
         companion1HealthBar.value = companion1Health;
-        companion2HealthBar.value = companion2Health;
     }
 
     // Coroutine to end the game and show result
@@ -323,7 +290,6 @@ public class BattleScript : MonoBehaviour
         string result = playerWon ? "Victory" : "Defeat...";
         statusText.SetText(result);
 
-        // Disable input buttons
         weaponCardButton.interactable = false;
         magic1CardButton.interactable = false;
         magic2CardButton.interactable = false;
@@ -331,11 +297,9 @@ public class BattleScript : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
 
-        // Transition back to ExplorationScene
         SceneManager.LoadScene("ExplorationScene");
     }
 
-    // Method to check if the game has ended
     void CheckForEnd()
     {
         if (enemyHealth <= 0)
@@ -343,7 +307,7 @@ public class BattleScript : MonoBehaviour
             playerWon = true;
             StartCoroutine(EndGame());
         }
-        else if (playerHealth <= 0 && companion1Health <= 0 && companion2Health <= 0)
+        else if (playerHealth <= 0 && companion1Health <= 0)
         {
             playerWon = false;
             StartCoroutine(EndGame());

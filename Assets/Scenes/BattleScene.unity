@@ -3830,7 +3830,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &957900051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5896,12 +5896,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerHealth: 100
   companion1Health: 80
-  companion2Health: 90
   enemyHealth: 150
   enemyDamage: 15
   playerHealthBar: {fileID: 601537078}
   companion1HealthBar: {fileID: 33553755}
-  companion2HealthBar: {fileID: 508286807}
   enemyHealthBar: {fileID: 1926379842}
   damageText: {fileID: 1735316094}
   beginText: {fileID: 745110499}
@@ -6746,7 +6744,7 @@ RectTransform:
   m_Father: {fileID: 996975820}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
