@@ -1866,6 +1866,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 2097458894}
+  followDistance: 3
+  followSpeed: 3
+  floatingText: {fileID: 695535776}
 --- !u!114 &416895326
 MonoBehaviour:
   m_ObjectHideFlags: 0
