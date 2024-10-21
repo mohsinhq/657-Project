@@ -31,18 +31,21 @@ public class PlayerMovement : MonoBehaviour
         if (JumpPressed) MakePlayerJump();
     }
 
-    private void MakePlayerMove(Vector2 UsersKeyStroke, bool CurrentlyRunning)
+    private void MakePlayerMove(Vector2 UsersKeyStroke, bool CurrentlyRunning) // code to move player and apply walk or run speed
     {
-        Vector3 MovementLocation = (PlayerMainCam.forward * UsersKeyStroke.y + PlayerMainCam.right * UsersKeyStroke.x).normalized; // .noramlised prevents faster diagonal travel
+        Vector3 MovementLocation = (PlayerMainCam.forward * UsersKeyStroke.y + PlayerMainCam.right * UsersKeyStroke.x).normalized;
         MovementLocation.y = 0; // stops the player from bopping up and down as they move
-        float SpeedOfMovement = CurrentlyRunning ? 10f : 5f;
+        float SpeedOfMovement;
+        if (CurrentlyRunning) { SpeedOfMovement = 10f; }
+        else { SpeedOfMovement = 5f; }
+
         PlayerRigidBody.MovePosition(transform.position + MovementLocation * SpeedOfMovement * Time.deltaTime);
     }
 
     //Makes a player jump by first checking whether the player is not already jumping (by checking if player is not touching the floor)
     private void MakePlayerJump() { if (PlayerOnTheFloor) { PlayerRigidBody.AddForce(Vector3.up * 5f, ForceMode.Impulse); } }
 
-    void OnCollisionEnter(Collision Touching) { if (Touching.gameObject.CompareTag("Floor")) { PlayerOnTheFloor = true; } } // checks if player is touching the floor
-
-    void OnCollisionExit(Collision Touching) { if (Touching.gameObject.CompareTag("Floor")) { PlayerOnTheFloor = false; } } // checks if player is not touching the floor
+    // checks if player is touching / not touching floor
+    void OnCollisionEnter(Collision Touching) { if (Touching.gameObject.CompareTag("Floor")) { PlayerOnTheFloor = true; } }
+    void OnCollisionExit(Collision Touching) { if (Touching.gameObject.CompareTag("Floor")) { PlayerOnTheFloor = false; } }
 }
