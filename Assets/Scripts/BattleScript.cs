@@ -267,7 +267,6 @@ public class BattleScript : MonoBehaviour
                             statusPromptsText.SetText("You have used all your defence card attempts.");
                         }
                     }
-                    return;
                 }
             }
             else // If no card is selected, prompt the player to select a card
