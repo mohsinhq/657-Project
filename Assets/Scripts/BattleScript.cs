@@ -57,7 +57,7 @@ public class BattleScript : MonoBehaviour
     public TMP_Text magic1CardText;
     public TMP_Text magic2CardText;
     public TMP_Text defenseCardText;
-    public Button playButton;
+    public Button useButton;
 
     // Card definitions
     public List<string> weaponCards = new List<string> { "Pistol", "Sword", "AR", "Bow & Arrow" };
@@ -95,16 +95,17 @@ public class BattleScript : MonoBehaviour
         defenseCardButton.interactable = false;
         combineCardsButton.interactable = false;
 
-        
+        // Add listeners to the buttons
         startBattleButton.onClick.AddListener(StartBattle);
         combineCardsButton.onClick.AddListener(ToggleCombineMode);
         weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
         magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
         magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
         defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));
-        playButton.onClick.AddListener(() => ExecuteTurn());
+        useButton.onClick.AddListener(() => ExecuteTurn());
     }
 
+    // Method to start the battle
     public void StartBattle()
     {
         instructionsPanel.SetActive(false);
@@ -192,6 +193,7 @@ public class BattleScript : MonoBehaviour
     {
         if (isCombining)
         {
+            // Combination play
             if (cardType == "Weapon")
             {
                 CombinationWeaponCard = playerWeaponCard;
@@ -200,7 +202,7 @@ public class BattleScript : MonoBehaviour
             else if (cardType == "Magic1" || cardType == "Magic2")
             {
                 CombinationMagicCard = cardType == "Magic1" ? playerMagicCard1 : playerMagicCard2;
-                statusPromptsText.SetText($"Selected magic: {CombinationMagicCard}. Now press play to attack.");
+                statusPromptsText.SetText($"Selected magic: {CombinationMagicCard}. Now press use to attack.");
             }
         }
         else
@@ -222,6 +224,7 @@ public class BattleScript : MonoBehaviour
             {
                 if (!string.IsNullOrEmpty(CombinationWeaponCard) && !string.IsNullOrEmpty(CombinationMagicCard))
                 {
+                    // Calculate the total damage and add to the feed
                     totalDamage += CalculateCardDamage(CombinationWeaponCard);
                     totalDamage += CalculateCardDamage(CombinationMagicCard);
                     AddToFeed("You", $"Combined {CombinationWeaponCard} and {CombinationMagicCard}", totalDamage);
@@ -255,6 +258,7 @@ public class BattleScript : MonoBehaviour
                     totalDamage = CalculateCardDamage(playerMagicCard2);
                     AddToFeed("You", $"Used {playerMagicCard2}", totalDamage);
                 }
+                // Handle defense card play
                 else if (selectedCardType == "Defense")
                 {
                     if (defenseCount > 0)
