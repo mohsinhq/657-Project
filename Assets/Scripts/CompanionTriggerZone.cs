@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Code that runs when player is near the companion
 public class CompanionTriggerZone : MonoBehaviour
 {
     public GameObject floatingText; 
@@ -12,6 +13,7 @@ public class CompanionTriggerZone : MonoBehaviour
         floatingText.SetActive(false); 
     }
 
+    // What to do when player is near
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -21,6 +23,7 @@ public class CompanionTriggerZone : MonoBehaviour
         }
     }
 
+    // What to do when player is not near
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -30,6 +33,7 @@ public class CompanionTriggerZone : MonoBehaviour
         }
     }
 
+    // Constantly check for these conditions and run CompanionAI code if true
     void Update()
     {
         if (playerNearby && Input.GetKeyDown(KeyCode.E))

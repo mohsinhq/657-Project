@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Code that helps the companion follow the Player
+
 public class CompanionAI : MonoBehaviour
 {
+    // Attributes
     public Transform player; 
     public float followDistance = 3.0f; 
     public float followSpeed = 3.0f; 
@@ -16,6 +19,7 @@ public class CompanionAI : MonoBehaviour
     {
     }
 
+    // Turns off floating text if befriended and starts following player
     void Update()
     {
         if (isBefriended)
