@@ -1421,7 +1421,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000038146973, y: 0.00081783993}
+  m_AnchoredPosition: {x: 0.000038146973, y: 0.00028867507}
   m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &296553427
@@ -2957,7 +2957,7 @@ GameObject:
   - component: {fileID: 728937488}
   - component: {fileID: 728937487}
   m_Layer: 5
-  m_Name: PlayCardText
+  m_Name: UseCardText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3002,7 +3002,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Play
+  m_text: Use
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3136,7 +3136,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: .
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3506,7 +3506,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1449221859}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.5294342
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6314,7 +6314,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Welcom to the Battle Game!\n\nIn this game, you will control a player
-    and a companion to defeat the enemy by playing different types of cards. \n\nHere\u2019s
+    and a companion to defeat the enemy by playing different types of cards. Here\u2019s
     how to play:\n\nCards Available:\nWeapon Cards: These allow you to deal direct
     damage to the enemy.\nMagic Cards: You can use magic cards like Fire, Ice, or
     Storm to deal elemental damage to the enemy.\nDefense Cards: Use these cards
@@ -6356,14 +6356,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 13
+  m_fontSizeBase: 13
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 8
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -6374,7 +6374,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 4
+  m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -6392,7 +6392,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 15.07196, y: 9.362167, z: 21.31903, w: -3.7503662}
+  m_margin: {x: 0, y: 0, z: 0, w: -0.851532}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7010,12 +7010,12 @@ MonoBehaviour:
   weaponCardButton: {fileID: 875867200}
   magic1CardButton: {fileID: 557501597}
   magic2CardButton: {fileID: 988456905}
-  defenseCardButton: {fileID: 561899280}
+  defenceCardButton: {fileID: 561899280}
   combineCardsButton: {fileID: 879764879}
   weaponCardText: {fileID: 223756848}
   magic1CardText: {fileID: 209127458}
   magic2CardText: {fileID: 111561054}
-  defenseCardText: {fileID: 766529499}
+  defenceCardText: {fileID: 766529499}
   useButton: {fileID: 1169330564}
   weaponCards:
   - Pistol
@@ -7027,7 +7027,7 @@ MonoBehaviour:
   - Ice
   - Poison
   - Storm
-  defenseCards:
+  defenceCards:
   - Lvl 1 Defense
   - Lvl 2 Defense
   - Lvl 3 Defense
