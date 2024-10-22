@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2352,6 +2352,7 @@ GameObject:
   - component: {fileID: 416895324}
   - component: {fileID: 416895326}
   - component: {fileID: 416895325}
+  - component: {fileID: 416895327}
   m_Layer: 0
   m_Name: Companion
   m_TagString: Untagged
@@ -2481,9 +2482,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d641df78842b543a5189449f206fe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 2097458894}
-  followDistance: 3
-  followSpeed: 5
+  CurrentPlayer: {fileID: 2097458894}
   floatingText: {fileID: 1117467188}
 --- !u!114 &416895326
 MonoBehaviour:
@@ -2498,6 +2497,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   floatingText: {fileID: 1117467188}
+--- !u!54 &416895327
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416895319}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &421281615
 PrefabInstance:
   m_ObjectHideFlags: 0
