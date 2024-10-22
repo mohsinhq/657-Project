@@ -19,9 +19,9 @@ public class BattleScript : MonoBehaviour
     public int enemyHealth = 150;
     public int enemyDamage = 10;
 
-    // Defense value for the player and companion
-    private int playerDefense = 0;
-    private int companion1Defense = 0;
+    // Defence value for the player and companion
+    private int playerDefence = 0;
+    private int companion1Defence = 0;
 
     // UI Elements for health bars
     public Slider playerHealthBar;
@@ -35,8 +35,8 @@ public class BattleScript : MonoBehaviour
     public TMP_Text statusPromptsText;
 
     //Combining Cards feature variables
-    private bool isCombining = false;  
-    private int combinationCount = 0;  
+    private bool isCombining = false;
+    private int combinationCount = 0;
     private const int maxCombinations = 2;
 
     // Selected Combined Card Variables
@@ -44,35 +44,35 @@ public class BattleScript : MonoBehaviour
     private string CombinationMagicCard = "";
 
     //Defence Card Variables
-    private int defenseCount = 2; 
-    private const int maxDefenseUses = 2;
+    private int defenceCount = 2;
+    private const int maxDefenceUses = 2;
 
     // Card buttons and texts
     public Button weaponCardButton;
     public Button magic1CardButton;
     public Button magic2CardButton;
-    public Button defenseCardButton;
+    public Button defenceCardButton;
     public Button combineCardsButton;
     public TMP_Text weaponCardText;
     public TMP_Text magic1CardText;
     public TMP_Text magic2CardText;
-    public TMP_Text defenseCardText;
+    public TMP_Text defenceCardText;
     public Button useButton;
 
     // Card definitions
     public List<string> weaponCards = new List<string> { "Pistol", "Sword", "AR", "Bow & Arrow" };
     public List<string> magicCards = new List<string> { "Fire", "Ice", "Poison", "Storm" };
-    public List<string> defenseCards = new List<string> { "Lvl 1 Defense", "Lvl 2 Defense", "Lvl 3 Defense" };
+    public List<string> defenceCards = new List<string> { "Lvl 1 Defence", "Lvl 2 Defence", "Lvl 3 Defence" };
 
     // Player's selected cards
     private string playerWeaponCard;
     private string playerMagicCard1;
     private string playerMagicCard2;
-    private string playerDefenseCard;
+    private string playerDefenceCard;
 
-    // Companion's weapon and defense cards
+    // Companion's weapon and defence cards
     private string companion1WeaponCard;
-    private string companion1DefenseCard;
+    private string companion1DefenceCard;
 
     // Enemy's weapon card
     private string enemyWeaponCard;
@@ -89,23 +89,20 @@ public class BattleScript : MonoBehaviour
     {
         // Showing the instruction panel and disable game buttons
         instructionsPanel.SetActive(true);
-        weaponCardButton.interactable = false;
-        magic1CardButton.interactable = false;
-        magic2CardButton.interactable = false;
-        defenseCardButton.interactable = false;
-        combineCardsButton.interactable = false;
+        DisablePlayerButtons();
 
-        // Add listeners to the buttons
+
         startBattleButton.onClick.AddListener(StartBattle);
         combineCardsButton.onClick.AddListener(ToggleCombineMode);
         weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
         magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
         magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
-        defenseCardButton.onClick.AddListener(() => SelectCard("Defense"));
+        defenceCardButton.onClick.AddListener(() => SelectCard("Defence"));
         useButton.onClick.AddListener(() => ExecuteTurn());
     }
 
-    // Method to start the battle
+
+
     public void StartBattle()
     {
         instructionsPanel.SetActive(false);
@@ -135,18 +132,18 @@ public class BattleScript : MonoBehaviour
         playerMagicCard1 = shuffledMagicCards[0];
         playerMagicCard2 = shuffledMagicCards[1];
 
-        playerDefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
+        playerDefenceCard = defenceCards[Random.Range(0, defenceCards.Count)];
 
         // Assigning only one weapon card to the companion
         companion1WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
-        companion1DefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
+        companion1DefenceCard = defenceCards[Random.Range(0, defenceCards.Count)];
         enemyWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
 
         // Updating the UI with the card names
         weaponCardText.SetText(playerWeaponCard);
         magic1CardText.SetText(playerMagicCard1);
         magic2CardText.SetText(playerMagicCard2);
-        defenseCardText.SetText(playerDefenseCard);
+        defenceCardText.SetText(playerDefenceCard);
     }
 
     // Method triggers the combine mode, disabling/enabling the defence mode 
@@ -158,21 +155,21 @@ public class BattleScript : MonoBehaviour
         {
             if (combinationCount >= maxCombinations)
             {
+                combineCardsButton.interactable = false;
                 statusPromptsText.SetText("You have reached the maximum number of combinations.");
+                // Disable combine card button as player cannot combine anymore
                 combinationCount++;
             }
             else
             {
-                statusPromptsText.SetText("Combining cards: Select one weapon and one magic card."); 
+                statusPromptsText.SetText("Combining cards: Select one weapon and one magic card.");
             }
-            // Disable combine card button as player cannot combine anymore
-            combineCardsButton.interactable = false;
         }
         else
         {
             // Reseting the selection if the player cancels the combination
             statusPromptsText.SetText("Combination canceled. Play a single card.");
-            defenseCardButton.interactable = true;  
+            defenceCardButton.interactable = true;
         }
 
         return;
@@ -184,16 +181,14 @@ public class BattleScript : MonoBehaviour
         selectedCardType = "";
         CombinationWeaponCard = "";
         CombinationMagicCard = "";
-        defenseCardButton.interactable = true; 
-        isCombining = false; 
+        isCombining = false;
     }
 
     // Method to select the card based on the card type and update the status text accordingly
     void SelectCard(string cardType)
     {
-        if (isCombining)
+        if (isCombining && combinationCount <= maxCombinations)
         {
-            // Combination play
             if (cardType == "Weapon")
             {
                 CombinationWeaponCard = playerWeaponCard;
@@ -215,6 +210,7 @@ public class BattleScript : MonoBehaviour
     // This is where the selected card action is executed when Play is clicked
     void ExecuteTurn()
     {
+        DisablePlayerButtons();
         if (playerTurn)
         {
             int totalDamage = 0;
@@ -224,7 +220,6 @@ public class BattleScript : MonoBehaviour
             {
                 if (!string.IsNullOrEmpty(CombinationWeaponCard) && !string.IsNullOrEmpty(CombinationMagicCard))
                 {
-                    // Calculate the total damage and add to the feed
                     totalDamage += CalculateCardDamage(CombinationWeaponCard);
                     totalDamage += CalculateCardDamage(CombinationMagicCard);
                     AddToFeed("You", $"Combined {CombinationWeaponCard} and {CombinationMagicCard}", totalDamage);
@@ -241,7 +236,7 @@ public class BattleScript : MonoBehaviour
                 }
             }
             // Handle single card play if the player is not combining
-            else if (!string.IsNullOrEmpty(selectedCardType)) 
+            else if (!string.IsNullOrEmpty(selectedCardType))
             {
                 if (selectedCardType == "Weapon")
                 {
@@ -258,19 +253,18 @@ public class BattleScript : MonoBehaviour
                     totalDamage = CalculateCardDamage(playerMagicCard2);
                     AddToFeed("You", $"Used {playerMagicCard2}", totalDamage);
                 }
-                // Handle defense card play
-                else if (selectedCardType == "Defense")
+                else if (selectedCardType == "Defence")
                 {
-                    if (defenseCount > 0)
+                    if (defenceCount > 0)
                     {
-                        PlayerDefend(playerDefenseCard);
-                        defenseCount--;
-                        statusPromptsText.SetText($"You have {defenseCount} defense card attempts left.");
+                        PlayerDefend(playerDefenceCard);
+                        defenceCount--;
+                        statusPromptsText.SetText($"You have {defenceCount} defence card attempts left.");
 
-                        if (defenseCount == 0)
+                        if (defenceCount == 0)
                         {
-                            defenseCardButton.interactable = false;
-                            statusPromptsText.SetText("You have used all your defense card attempts.");
+                            defenceCardButton.interactable = false;
+                            statusPromptsText.SetText("You have used all your defence card attempts.");
                         }
                     }
                     return;
@@ -299,6 +293,7 @@ public class BattleScript : MonoBehaviour
     {
         if (enemyHealth > 0 && playerHealth > 0)
         {
+            DisablePlayerButtons();
             int damage = CalculateCardDamage(card);
             enemyHealth -= damage;
             UpdateHealthBars();
@@ -313,18 +308,18 @@ public class BattleScript : MonoBehaviour
     {
         switch (card)
         {
-            case "Lvl 1 Defense":
-                playerDefense = 5;
+            case "Lvl 1 Defence":
+                playerDefence = 5;
                 break;
-            case "Lvl 2 Defense":
-                playerDefense = 10;
+            case "Lvl 2 Defence":
+                playerDefence = 10;
                 break;
-            case "Lvl 3 Defense":
-                playerDefense = 15;
+            case "Lvl 3 Defence":
+                playerDefence = 15;
                 break;
         }
 
-        statusPromptsText.SetText($"Player selected {card}, defense set to {playerDefense}!");
+        statusPromptsText.SetText($"Player selected {card}, defence set to {playerDefence}!");
     }
 
     // Companion 1 attack method
@@ -356,23 +351,26 @@ public class BattleScript : MonoBehaviour
 
             if (target == 0)
             {
-                int finalDamage = Mathf.Max(0, enemyDamage - playerDefense);
+                int finalDamage = Mathf.Max(0, enemyDamage - playerDefence);
                 playerHealth -= finalDamage;
                 AddToFeed("Enemy", "Attacked you", finalDamage);
             }
             else if (target == 1)
             {
-                int finalDamage = Mathf.Max(0, enemyDamage - companion1Defense);
+                int finalDamage = Mathf.Max(0, enemyDamage - companion1Defence);
                 companion1Health -= finalDamage;
                 AddToFeed("Enemy", "Attacked Companion 1", finalDamage);
             }
 
             // Update health bars and check for end of game
             CheckForEnd();
+
+            statusPromptsText.SetText("Your turn");
+            EnablePlayerButtons();
             playerTurn = true;
 
-            playerDefense = 0;
-            companion1Defense = 0;
+            playerDefence = 0;
+            companion1Defence = 0;
         }
         else
         {
@@ -464,7 +462,7 @@ public class BattleScript : MonoBehaviour
         weaponCardButton.interactable = false;
         magic1CardButton.interactable = false;
         magic2CardButton.interactable = false;
-        defenseCardButton.interactable = false;
+        defenceCardButton.interactable = false;
 
         yield return new WaitForSeconds(3f);
 
@@ -501,11 +499,25 @@ public class BattleScript : MonoBehaviour
 
         centerText.SetText("");
 
-        // Enable buttons after the countdown
+        EnablePlayerButtons();
+    }
+    public void DisablePlayerButtons()
+    {
+        weaponCardButton.interactable = false;
+        magic1CardButton.interactable = false;
+        magic2CardButton.interactable = false;
+        defenceCardButton.interactable = false;
+        combineCardsButton.interactable = false;
+        useButton.interactable = false;
+    }
+
+    public void EnablePlayerButtons()
+    {
         weaponCardButton.interactable = true;
         magic1CardButton.interactable = true;
         magic2CardButton.interactable = true;
-        defenseCardButton.interactable = true;
+        defenceCardButton.interactable = true;
         combineCardsButton.interactable = true;
+        useButton.interactable = true;
     }
 }
