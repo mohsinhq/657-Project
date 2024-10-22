@@ -8,6 +8,11 @@ using System.Linq;
 
 public class BattleScript : MonoBehaviour
 {
+    // Instruction panel and start battle button
+    public GameObject instructionsPanel;
+    public Button startBattleButton;
+
+
     // Health values
     public int playerHealth = 150;
     public int companion1Health = 80;
@@ -24,15 +29,30 @@ public class BattleScript : MonoBehaviour
     public Slider enemyHealthBar;
 
     // UI for damage text and buttons
-    public TMP_Text damageText;
-    public TMP_Text beginText;
-    public TMP_Text statusText;
+    public TMP_Text centerText;
+    //public TMP_Text statusText;
+    public TMP_Text scrollableTextFeed;
+    public TMP_Text statusPromptsText;
+
+    //Combining Cards feature variables
+    private bool isCombining = false;  
+    private int combinationCount = 0;  
+    private const int maxCombinations = 2;
+
+    // Selected Combined Card Variables
+    private string CombinationWeaponCard = "";
+    private string CombinationMagicCard = "";
+
+    //Defence Card Variables
+    private int defenseCount = 2; 
+    private const int maxDefenseUses = 2;
 
     // Card buttons and texts
     public Button weaponCardButton;
     public Button magic1CardButton;
     public Button magic2CardButton;
     public Button defenseCardButton;
+    public Button combineCardsButton;
     public TMP_Text weaponCardText;
     public TMP_Text magic1CardText;
     public TMP_Text magic2CardText;
@@ -62,29 +82,22 @@ public class BattleScript : MonoBehaviour
     private bool playerWon = false;
     private string selectedCardType = "";
 
-    public Camera mainCamera;  // Reference to the Main Camera
+    public Camera mainCamera;
+
 
     void Start()
     {
-        AssignRandomCards();
-        StartCoroutine(ShowBeginMessage());
+        // Showing the instruction panel and disable game buttons
+        instructionsPanel.SetActive(true);
+        weaponCardButton.interactable = false;
+        magic1CardButton.interactable = false;
+        magic2CardButton.interactable = false;
+        defenseCardButton.interactable = false;
+        combineCardsButton.interactable = false;
 
-        // Initialize health bars
-        playerHealthBar.maxValue = playerHealth;
-        playerHealthBar.value = playerHealth;
-
-        companion1HealthBar.maxValue = companion1Health;
-        companion1HealthBar.value = companion1Health;
-
-        enemyHealthBar.maxValue = enemyHealth;
-        enemyHealthBar.value = enemyHealth;
-
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;  // If no camera is assigned, use the Main Camera
-        }
-
-        // Add listeners to the buttons for player actions
+        
+        startBattleButton.onClick.AddListener(StartBattle);
+        combineCardsButton.onClick.AddListener(ToggleCombineMode);
         weaponCardButton.onClick.AddListener(() => SelectCard("Weapon"));
         magic1CardButton.onClick.AddListener(() => SelectCard("Magic1"));
         magic2CardButton.onClick.AddListener(() => SelectCard("Magic2"));
@@ -92,12 +105,30 @@ public class BattleScript : MonoBehaviour
         playButton.onClick.AddListener(() => ExecuteTurn());
     }
 
-    // Randomly assign cards to the player, companion, and enemy
+    public void StartBattle()
+    {
+        instructionsPanel.SetActive(false);
+        StartCoroutine(ShowBeginMessage());
+
+        // Initialize health bars after battle starts
+        playerHealthBar.maxValue = playerHealth;
+        playerHealthBar.value = playerHealth;
+        companion1HealthBar.maxValue = companion1Health;
+        companion1HealthBar.value = companion1Health;
+        enemyHealthBar.maxValue = enemyHealth;
+        enemyHealthBar.value = enemyHealth;
+
+        // Assign cards after battle begins
+        AssignRandomCards();
+    }
+
+
+    // Randomly assigning cards to the player, companion, and enemy
     void AssignRandomCards()
     {
         playerWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
 
-        // Ensure unique magic cards are assigned
+        // Ensuring unique magic cards are assigned
         var shuffledMagicCards = new List<string>(magicCards);
         shuffledMagicCards = shuffledMagicCards.OrderBy(x => Random.value).ToList();
         playerMagicCard1 = shuffledMagicCards[0];
@@ -105,49 +136,157 @@ public class BattleScript : MonoBehaviour
 
         playerDefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
 
-        // Assign only one weapon card to the companion
+        // Assigning only one weapon card to the companion
         companion1WeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
         companion1DefenseCard = defenseCards[Random.Range(0, defenseCards.Count)];
-
         enemyWeaponCard = weaponCards[Random.Range(0, weaponCards.Count)];
 
-        // Update the UI with the card names
+        // Updating the UI with the card names
         weaponCardText.SetText(playerWeaponCard);
         magic1CardText.SetText(playerMagicCard1);
         magic2CardText.SetText(playerMagicCard2);
         defenseCardText.SetText(playerDefenseCard);
     }
 
+    // Method triggers the combine mode, disabling/enabling the defence mode 
+    void ToggleCombineMode()
+    {
+        isCombining = !isCombining;
+
+        if (isCombining)
+        {
+            if (combinationCount >= maxCombinations)
+            {
+                statusPromptsText.SetText("You have reached the maximum number of combinations.");
+                combinationCount++;
+            }
+            else
+            {
+                statusPromptsText.SetText("Combining cards: Select one weapon and one magic card."); 
+            }
+            // Disable combine card button as player cannot combine anymore
+            combineCardsButton.interactable = false;
+        }
+        else
+        {
+            // Reseting the selection if the player cancels the combination
+            statusPromptsText.SetText("Combination canceled. Play a single card.");
+            defenseCardButton.interactable = true;  
+        }
+
+        return;
+    }
+
+    // Method to reset the card selection
+    void ResetSelection()
+    {
+        selectedCardType = "";
+        CombinationWeaponCard = "";
+        CombinationMagicCard = "";
+        defenseCardButton.interactable = true; 
+        isCombining = false; 
+    }
+
+    // Method to select the card based on the card type and update the status text accordingly
     void SelectCard(string cardType)
     {
-        selectedCardType = cardType;
-        damageText.SetText($"Player selected {cardType} card!");
+        if (isCombining)
+        {
+            if (cardType == "Weapon")
+            {
+                CombinationWeaponCard = playerWeaponCard;
+                statusPromptsText.SetText($"Selected weapon: {CombinationWeaponCard}. Now select a magic card.");
+            }
+            else if (cardType == "Magic1" || cardType == "Magic2")
+            {
+                CombinationMagicCard = cardType == "Magic1" ? playerMagicCard1 : playerMagicCard2;
+                statusPromptsText.SetText($"Selected magic: {CombinationMagicCard}. Now press play to attack.");
+            }
+        }
+        else
+        {
+            selectedCardType = cardType;  // Single card play
+            statusPromptsText.SetText($"Player selected {cardType} card!");
+        }
     }
 
     // This is where the selected card action is executed when Play is clicked
     void ExecuteTurn()
     {
-        if (playerTurn && !string.IsNullOrEmpty(selectedCardType))
+        if (playerTurn)
         {
-            if (selectedCardType == "Weapon")
+            int totalDamage = 0;
+
+            // Handle card combination only if the player is combining and has attempts left
+            if (isCombining && combinationCount < maxCombinations)
             {
-                PlayerAttack(playerWeaponCard);
+                if (!string.IsNullOrEmpty(CombinationWeaponCard) && !string.IsNullOrEmpty(CombinationMagicCard))
+                {
+                    totalDamage += CalculateCardDamage(CombinationWeaponCard);
+                    totalDamage += CalculateCardDamage(CombinationMagicCard);
+                    AddToFeed("You", $"Combined {CombinationWeaponCard} and {CombinationMagicCard}", totalDamage);
+
+                    combinationCount++;
+                    statusPromptsText.SetText($"You have {maxCombinations - combinationCount} combination attempts left.");
+
+                    ResetSelection();
+                }
+                else
+                {
+                    statusPromptsText.SetText("You must select both a weapon and a magic card to combine.");
+                    return;
+                }
             }
-            else if (selectedCardType == "Magic1")
+            // Handle single card play if the player is not combining
+            else if (!string.IsNullOrEmpty(selectedCardType)) 
             {
-                PlayerAttack(playerMagicCard1);
+                if (selectedCardType == "Weapon")
+                {
+                    totalDamage = CalculateCardDamage(playerWeaponCard);
+                    AddToFeed("You", $"Used {playerWeaponCard}", totalDamage);
+                }
+                else if (selectedCardType == "Magic1")
+                {
+                    totalDamage = CalculateCardDamage(playerMagicCard1);
+                    AddToFeed("You", $"Used {playerMagicCard1}", totalDamage);
+                }
+                else if (selectedCardType == "Magic2")
+                {
+                    totalDamage = CalculateCardDamage(playerMagicCard2);
+                    AddToFeed("You", $"Used {playerMagicCard2}", totalDamage);
+                }
+                else if (selectedCardType == "Defense")
+                {
+                    if (defenseCount > 0)
+                    {
+                        PlayerDefend(playerDefenseCard);
+                        defenseCount--;
+                        statusPromptsText.SetText($"You have {defenseCount} defense card attempts left.");
+
+                        if (defenseCount == 0)
+                        {
+                            defenseCardButton.interactable = false;
+                            statusPromptsText.SetText("You have used all your defense card attempts.");
+                        }
+                    }
+                    return;
+                }
             }
-            else if (selectedCardType == "Magic2")
+            else // If no card is selected, prompt the player to select a card
             {
-                PlayerAttack(playerMagicCard2);
-            }
-            else if (selectedCardType == "Defense")
-            {
-                PlayerDefend(playerDefenseCard);
+                statusPromptsText.SetText("No card selected. Please select a card.");
+                return;
             }
 
+            // Apply damage to the enemy and reset for the next turn
+            enemyHealth -= totalDamage;
+            UpdateHealthBars();
+            CheckForEnd();
             playerTurn = false;
             Invoke("Companion1Attack", 1f);
+
+            // Reset selection after the turn
+            ResetSelection();
         }
     }
 
@@ -159,7 +298,7 @@ public class BattleScript : MonoBehaviour
             int damage = CalculateCardDamage(card);
             enemyHealth -= damage;
             UpdateHealthBars();
-            damageText.SetText($"Player used {card} and dealt {damage} damage!");
+            statusPromptsText.SetText($"Player used {card} and dealt {damage} damage!");
 
             CheckForEnd();
         }
@@ -181,7 +320,7 @@ public class BattleScript : MonoBehaviour
                 break;
         }
 
-        damageText.SetText($"Player selected {card}, defense set to {playerDefense}!");
+        statusPromptsText.SetText($"Player selected {card}, defense set to {playerDefense}!");
     }
 
     // Companion 1 attack method
@@ -192,7 +331,7 @@ public class BattleScript : MonoBehaviour
             int damage = CalculateCardDamage(companion1WeaponCard);
             enemyHealth -= damage;
             UpdateHealthBars();
-            damageText.SetText($"Companion 1 dealt {damage} damage!");
+            AddToFeed("Companion", $"Used {companion1WeaponCard}", damage);
 
             CheckForEnd();
             if (enemyHealth > 0)
@@ -207,7 +346,7 @@ public class BattleScript : MonoBehaviour
     {
         if (enemyHealth > 0)
         {
-            int[] targets = { 0, 1 };  // 0 for player, 1 for companion
+            int[] targets = { 0, 1 };
             System.Random rnd = new System.Random();
             int target = targets.OrderBy(x => rnd.Next()).First();
 
@@ -215,19 +354,19 @@ public class BattleScript : MonoBehaviour
             {
                 int finalDamage = Mathf.Max(0, enemyDamage - playerDefense);
                 playerHealth -= finalDamage;
-                damageText.SetText($"Enemy attacked the player and dealt {finalDamage} damage!");
+                AddToFeed("Enemy", "Attacked you", finalDamage);
             }
-            else
+            else if (target == 1)
             {
                 int finalDamage = Mathf.Max(0, enemyDamage - companion1Defense);
                 companion1Health -= finalDamage;
-                damageText.SetText($"Enemy attacked Companion 1 and dealt {finalDamage} damage!");
+                AddToFeed("Enemy", "Attacked Companion 1", finalDamage);
             }
 
+            // Update health bars and check for end of game
             CheckForEnd();
             playerTurn = true;
 
-            // Reset defenses after enemy attack
             playerDefense = 0;
             companion1Defense = 0;
         }
@@ -284,11 +423,39 @@ public class BattleScript : MonoBehaviour
         companion1HealthBar.value = companion1Health;
     }
 
+    // method to format the feed text and add it to the scrollable feed
+    void AddToFeed(string actor, string action, int damage)
+    {
+        string coloredActor = "";
+        if (actor == "You")
+        {
+            coloredActor = "<color=red>You:</color>";
+        }
+        else if (actor == "Companion")
+        {
+            coloredActor = "<color=red>Companion:</color>";
+        }
+        else if (actor == "Enemy")
+        {
+            coloredActor = "<color=red>Enemy:</color>";
+        }
+
+        // Add the new entry to the top of the scrollable feed
+        string newEntry = $"{coloredActor} {action} dealt {damage} damage.\n";
+        scrollableTextFeed.text = newEntry + scrollableTextFeed.text;
+
+        // Scroll to the top of the feed so latest is at the top
+        Canvas.ForceUpdateCanvases();
+        scrollableTextFeed.GetComponentInParent<ScrollRect>().verticalNormalizedPosition = 1;
+        Canvas.ForceUpdateCanvases();
+    }
+
+
     // Coroutine to end the game and show result
     IEnumerator EndGame()
     {
         string result = playerWon ? "Victory" : "Defeat...";
-        statusText.SetText(result);
+        centerText.SetText(result);
 
         weaponCardButton.interactable = false;
         magic1CardButton.interactable = false;
@@ -300,6 +467,7 @@ public class BattleScript : MonoBehaviour
         SceneManager.LoadScene("ExplorationScene");
     }
 
+    // Method to check if the game has ended and calls the end game coroutine
     void CheckForEnd()
     {
         if (enemyHealth <= 0)
@@ -314,7 +482,7 @@ public class BattleScript : MonoBehaviour
         }
     }
 
-    // Coroutine to show the "Begin" text at the start of the battle
+    // Coroutine to give the player a countdown before the game starts
     IEnumerator ShowBeginMessage()
     {
         string[] beginStates = { "Begin...", "Begin..", "Begin.", "Begin" };
@@ -322,11 +490,18 @@ public class BattleScript : MonoBehaviour
 
         for (int i = 0; i < beginStates.Length; i++)
         {
-            beginText.SetText(beginStates[index]);
+            centerText.SetText(beginStates[index]);
             index = (index + 1) % beginStates.Length;
             yield return new WaitForSeconds(1f);
         }
 
-        beginText.SetText("");
+        centerText.SetText("");
+
+        // Enable buttons after the countdown
+        weaponCardButton.interactable = true;
+        magic1CardButton.interactable = true;
+        magic2CardButton.interactable = true;
+        defenseCardButton.interactable = true;
+        combineCardsButton.interactable = true;
     }
 }
