@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2478,12 +2478,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 416895319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c94745973fb66f40b5f51d693ac1ae1, type: 3}
+  m_Script: {fileID: 11500000, guid: 53d641df78842b543a5189449f206fe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 2097458894}
   followDistance: 3
-  followSpeed: 3
+  followSpeed: 5
   floatingText: {fileID: 1117467188}
 --- !u!114 &416895326
 MonoBehaviour:
@@ -2494,7 +2494,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 416895319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f0db151a33307b48b3cbfc3c2cd1944, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d93f3c882a71fe4692eda5d5f5d02f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   floatingText: {fileID: 1117467188}
@@ -6052,13 +6052,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.56, y: 4.09, z: -9.4}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 2, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
