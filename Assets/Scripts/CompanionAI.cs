@@ -26,7 +26,7 @@ public class CompanionAI : MonoBehaviour
 
             // Move towards the target based on their location and the distance offset we set
             Vector3 direction = (CompanionLocation - transform.position).normalized;
-            CompanionRidigbody.MovePosition(transform.position + direction * 7.5f * Time.deltaTime);
+            CompanionRidigbody.MovePosition(transform.position + direction * 10f * Time.deltaTime);
         }
     }
 
