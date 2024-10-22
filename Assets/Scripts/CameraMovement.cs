@@ -31,7 +31,7 @@ public class CameraMovement : MonoBehaviour
             Vector2 mouseInput = playerControls.Player.Look.ReadValue<Vector2>();
             yAxisRotation += mouseInput.x * rotationSpeed;
             xAxisRotation -= mouseInput.y * rotationSpeed;
-            xAxisRotation = Mathf.Clamp(xAxisRotation, -28f, 30f);
+            xAxisRotation = Mathf.Clamp(xAxisRotation, -20f, 30f);
         }
 
         // Apply rotation and look at the player
