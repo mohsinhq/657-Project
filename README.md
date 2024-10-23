@@ -11,6 +11,7 @@
 
 ## Disclaimer
 ###     Coloured Materials Are Built by Us (Simple New Material With A colour Wheel picked colour)
+###     Initial Scene Is StartScene
 
 ## Player Controls
 ###     WASD Or Arrow Key Controls: Move the player forward, backward, left, and right.
